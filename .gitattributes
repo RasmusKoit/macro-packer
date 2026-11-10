@@ -1,0 +1,4 @@
+# Same line endings on every checkout, matching the files on the board.
+*.py text eol=lf
+*.json text eol=lf
+*.md text eol=lf

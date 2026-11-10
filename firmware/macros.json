@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "hide_drive": false,
+  "hardware": {
+    "button_pin": "GP2",
+    "profile_button_pin": "GP3",
+    "display_clk": "GP4",
+    "display_dio": "GP5",
+    "display_brightness": 4
+  },
+  "active_profile": "diablo",
+  "profiles": [
+    {
+      "number": 1,
+      "name": "diablo",
+      "display_name": "dIAb",
+      "cooldown_ms": 30000,
+      "delay_between_macros_ms": 60,
+      "macros": [
+        { "name": "Skill 1", "steps": [{ "tap": "1" }] },
+        { "name": "Skill 2", "steps": [{ "tap": "2" }] },
+        { "name": "Skill 3 + 4", "steps": [{ "tap": "3" }, { "wait": 40 }, { "tap": "4" }] },
+        {
+          "name": "Shift skill",
+          "steps": [{ "press": "SHIFT" }, { "tap": "E", "hold_ms": 50 }, { "release": "SHIFT" }]
+        },
+        { "name": "Potion", "steps": [{ "tap": "Q" }] }
+      ]
+    },
+    {
+      "number": 2,
+      "name": "burst",
+      "cooldown_ms": 12000,
+      "delay_between_macros_ms": 60,
+      "macros": [
+        { "name": "Skill 1", "steps": [{ "tap": "1" }] },
+        { "name": "Skill 2", "steps": [{ "tap": "2" }] }
+      ]
+    }
+  ]
+}
