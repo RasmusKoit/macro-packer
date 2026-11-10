@@ -1,7 +1,7 @@
 """Runs once at power-up, before USB is set up (not on auto-reload).
 
 When macros.json has "hide_drive": true, the CIRCUITPY drive is hidden so
-the board shows up as a plain keyboard. Hold the macro button while
+the board shows up as a plain keyboard and mouse. Hold the macro button while
 plugging in to get the drive back (GP2 always works too, in case
 button_pin points at the wrong pin). The drive is only hidden when the
 whole config is valid, pins included, so a typo can't lock you out.

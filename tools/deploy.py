@@ -3,10 +3,13 @@
     python tools/deploy.py              # auto-detect the board
     python tools/deploy.py --drive E    # or name the drive
     python tools/deploy.py --config     # also overwrite macros.json on the board
+    python tools/deploy.py --build-only # just refresh build/, no board needed
 
 mpy-cross must match the board's CircuitPython version, so it is read from
 boot_out.txt and the matching official build is downloaded once into
-tools/.bin/. Files that are already identical on the board are skipped.
+tools/.bin/. The compiled files are kept in build/lib/, with the version
+they were built for in build/CIRCUITPY_VERSION. Files that are already
+identical on the board are skipped.
 macros.json on the board is left alone unless --config is given, and even
 then the board's copy is backed up into backups/ first.
 """
@@ -26,6 +29,7 @@ FIRMWARE = os.path.join(ROOT, "firmware")
 BUILD = os.path.join(ROOT, "build")
 BIN = os.path.join(ROOT, "tools", ".bin")
 BACKUPS = os.path.join(ROOT, "backups")
+VERSION_FILE = os.path.join(BUILD, "CIRCUITPY_VERSION")
 BOARD_ID = "waveshare_rp2040_zero"
 MPY_CROSS_URL = ("https://adafruit-circuit-python.s3.amazonaws.com/bin/mpy-cross/"
                  "windows/mpy-cross-windows-%s.static.exe")
@@ -111,14 +115,17 @@ def get_mpy_cross(version):
              "CircuitPython version and pass --mpy-cross PATH." % version)
 
 
-def compile_modules(mpy_cross):
+def compile_modules(mpy_cross, version):
     src_dir = os.path.join(FIRMWARE, "lib")
     out_dir = os.path.join(BUILD, "lib")
     os.makedirs(out_dir, exist_ok=True)
+    sources = [n for n in sorted(os.listdir(src_dir)) if n.endswith(".py")]
+    # A module deleted from firmware/lib/ mustn't linger in build/.
+    for name in os.listdir(out_dir):
+        if name.endswith(".mpy") and name[:-4] + ".py" not in sources:
+            os.remove(os.path.join(out_dir, name))
     built = []
-    for name in sorted(os.listdir(src_dir)):
-        if not name.endswith(".py"):
-            continue
+    for name in sources:
         out = os.path.join(out_dir, name[:-3] + ".mpy")
         # -s: tracebacks on the board show "macro_config.py", not the PC path.
         cmd = [mpy_cross, "-s", name, "-o", out, os.path.join(src_dir, name)]
@@ -127,7 +134,17 @@ def compile_modules(mpy_cross):
         except (OSError, subprocess.CalledProcessError) as e:
             sys.exit("Compiling %s failed (%s); nothing was copied to the board." % (name, e))
         built.append(out)
+    with open(VERSION_FILE, "w", encoding="utf-8", newline="\n") as f:
+        f.write(version + "\n")
     return built
+
+
+def built_version():
+    try:
+        with open(VERSION_FILE, encoding="utf-8") as f:
+            return f.read().strip() or None
+    except OSError:
+        return None
 
 
 def same_file(a, b):
@@ -184,7 +201,21 @@ def main():
     parser.add_argument("--config", action="store_true",
                         help="overwrite macros.json on the board (its copy is backed up to backups/)")
     parser.add_argument("--mpy-cross", help="path to an mpy-cross matching the board")
+    parser.add_argument("--build-only", action="store_true",
+                        help="only compile into build/; no board needed")
+    parser.add_argument("--cp-version",
+                        help="CircuitPython version to build for with --build-only "
+                             "(default: the one build/ was last built for)")
     args = parser.parse_args()
+
+    if args.build_only:
+        version = args.cp_version or built_version()
+        if not version:
+            sys.exit("Pass --cp-version, e.g. --cp-version 10.3.1 (the board's "
+                     "CircuitPython version, shown in its boot_out.txt).")
+        compile_modules(args.mpy_cross or get_mpy_cross(version), version)
+        print("Built build/lib/ for CircuitPython", version)
+        return
 
     if args.drive:
         drive = normalize_drive(args.drive)
@@ -202,7 +233,7 @@ def main():
 
     # Everything is compiled before the board is touched.
     mpy_cross = args.mpy_cross or get_mpy_cross(version)
-    built = compile_modules(mpy_cross)
+    built = compile_modules(mpy_cross, version)
     modules = [os.path.basename(p)[:-4] for p in built]
 
     try:

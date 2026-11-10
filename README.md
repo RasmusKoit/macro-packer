@@ -160,6 +160,14 @@ Set `"hide_drive": true` in `macros.json` and replug the board. From then on it 
 
 Edit the sources in `firmware/`, then run `python tools/deploy.py` to put them on the board. Changes to `boot.py` only take effect after a replug, because it only runs at power-up; deploy reminds you. On the board, `lib/` holds only compiled `.mpy` files. Don't copy `.py` versions of the modules there by hand; if both exist, the board loads the `.py`.
 
+The compiled modules are committed in `build/lib/`, built for the CircuitPython version in `build/CIRCUITPY_VERSION`, so you can copy them to a board without installing anything. After changing anything in `firmware/lib/`, refresh them before committing, with or without the board plugged in:
+
+```
+python tools/deploy.py --build-only
+```
+
+Add `--cp-version 10.4.0` (for example) to build for a different CircuitPython release.
+
 The config parser, display text and time formatting are plain Python and are tested on the PC:
 
 ```

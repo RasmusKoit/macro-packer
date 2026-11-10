@@ -1,9 +1,9 @@
-"""Macro button: one press sends the active profile's macros (keys and
-mouse clicks), then the
-TM1637 display counts down the cooldown (mm:ss) and the button is ignored
-until it reaches 00:00. A second button cycles through the profiles (on release),
-showing each profile's display_name, or its number (e.g. "P002") if it has
-none. Every profile has its own cooldown timer.
+"""Macro button: one press sends the active profile's macros (keys, mouse
+clicks and scrolling), then the TM1637 display counts down the cooldown
+(mm:ss) and the button is ignored until it reaches 00:00. A second button
+cycles through the profiles (on release), showing each profile's
+display_name, or its number (e.g. "P002") if it has none. Every profile
+has its own cooldown timer.
 
 Edit /macros.json on the CIRCUITPY drive; saving it reloads this program.
 """
